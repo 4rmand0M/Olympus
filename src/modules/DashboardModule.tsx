@@ -1,0 +1,256 @@
+import { useState } from 'react';
+import { 
+  DollarSign, FileText, Users, TrendingUp, ArrowUpRight, ArrowDownRight, Calendar 
+} from 'lucide-react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  AreaChart, Area, PieChart, Pie, Cell 
+} from 'recharts';
+import { useCrud } from '@/hooks/useCrud';
+
+export const DashboardModule = () => {
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const { data: facturas, loading: loadingFacturas } = useCrud('facturas');
+  const { data: clientes } = useCrud('clientes');
+  const { data: productos } = useCrud('productos');
+  const { data: movimientos } = useCrud('movimientos_inventario');
+
+  // Metrics calculation
+  // Excluir canceladas de las ventas y cuentas por cobrar
+  const facturasValidas = facturas.filter(f => f.estado !== 'Cancelada');
+  const totalVentas = facturasValidas.reduce((acc, f) => acc + Number(f.total), 0);
+  const facturasEmitidas = facturasValidas.length;
+  const clientesActivos = clientes.length;
+  const porCobrar = facturasValidas.filter(f => f.estado === 'Pendiente').reduce((acc, f) => acc + Number(f.total), 0);
+
+  const metrics = [
+    { label: 'Ventas Totales', value: `RD$ ${totalVentas.toLocaleString()}`, change: '+100%', up: true, icon: DollarSign },
+    { label: 'Facturas Emitidas', value: facturasEmitidas.toString(), change: '+100%', up: true, icon: FileText },
+    { label: 'Clientes Activos', value: clientesActivos.toString(), change: '+100%', up: true, icon: Users },
+    { label: 'Cuentas por Cobrar', value: `RD$ ${porCobrar.toLocaleString()}`, change: '0%', up: true, icon: TrendingUp },
+  ];
+
+  const recentInvoices = facturas.slice(0, 5).map(f => ({
+    id: f.id,
+    num: f.numero_factura,
+    date: f.fecha || f.created_at?.split('T')[0],
+    client: f.cliente?.nombre || 'Consumidor Final',
+    total: `RD$ ${Number(f.total).toLocaleString()}`,
+    status: f.estado || 'Pendiente'
+  }));
+
+  // Top products from actual movements (tipo Salida)
+  const productSales = movimientos
+    .filter(m => m.tipo === 'Salida')
+    .reduce((acc, m) => {
+      acc[m.producto_id] = (acc[m.producto_id] || 0) + Number(m.cantidad || 0);
+      return acc;
+    }, {} as Record<string, number>);
+
+  const topProducts = Object.entries(productSales)
+    .map(([pid, qty]) => {
+      const p = productos.find(prod => prod.id === pid);
+      const quantity = Number(qty);
+      const price = Number(p?.precio || 0);
+      return {
+        id: pid,
+        name: p?.nombre || 'Producto Desconocido',
+        qty: quantity,
+        revenue: `RD$ ${(quantity * price).toLocaleString()}`
+      };
+    })
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 4);
+
+  // Agregación para gráficos
+  const hoy = new Date();
+  const diasSemanalesNombres = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  
+  const ventasSemana = Array.from({length: 7}).map((_, i) => {
+    const d = new Date();
+    const dayOffset = 6 - Number(i);
+    d.setDate(hoy.getDate() - dayOffset);
+    const targetDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    
+    const totalDia = facturasValidas
+      .filter(f => {
+         const dateVal = f.fecha || f.created_at || '';
+         return dateVal.split('T')[0] === targetDateStr;
+      })
+      .reduce((acc, f) => acc + Number(f.total), 0);
+      
+    return { dia: diasSemanalesNombres[d.getDay()], ventas: totalDia };
+  });
+
+  const mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const ventasMensual = Array.from({length: 12}).map((_, i) => {
+    const targetStr = `${selectedYear}-${String(i + 1).padStart(2, '0')}`;
+    const totalMes = facturasValidas
+      .filter(f => {
+         const dateVal = f.fecha || f.created_at || '';
+         return dateVal.startsWith(targetStr);
+      })
+      .reduce((acc, f) => acc + Number(f.total), 0);
+      
+    return { mes: mesesNombres[i], ventas: totalMes };
+  });
+
+
+  const groupByEstado = facturas.reduce((acc, f) => {
+     const st = f.estado || 'Pendiente';
+     acc[st] = (acc[st] || 0) + Number(f.total);
+     return acc;
+  }, {} as Record<string, number>);
+  
+  const ventasEstado = Object.entries(groupByEstado)
+     .map(([name, value]) => ({ name, value: value as number }))
+     .filter(v => v.value > 0);
+     
+  if (ventasEstado.length === 0) {
+     ventasEstado.push({ name: 'Sin datos', value: 1 });
+  }
+  
+  const PIE_COLORS = ['hsl(212, 55%, 20%)', 'hsl(174, 55%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(210, 15%, 70%)'];
+
+  const handleDownload = (type: string) => {
+    alert(`Generando reporte de ${type}... Por favor espere.`);
+  };
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-heading text-xl font-bold">Dashboard</h2>
+          <p className="text-sm text-muted-foreground">Resumen general del sistema</p>
+        </div>
+        <div className="flex items-center gap-2">
+           <Calendar size={16} className="text-muted-foreground" />
+           <select 
+             className="erp-input py-1 text-xs" 
+             value={selectedYear} 
+             onChange={(e) => setSelectedYear(Number(e.target.value))}
+           >
+              {[2023, 2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+           </select>
+        </div>
+      </div>
+
+      {/* Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {metrics.map((m) => (
+          <div key={m.label} className="erp-metric">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">{m.label}</span>
+              <m.icon size={16} className="text-primary" />
+            </div>
+            <div className="text-lg font-heading font-bold">{m.value}</div>
+            <div className={`flex items-center gap-1 text-xs font-medium ${m.up ? 'text-[hsl(var(--erp-success))]' : 'text-[hsl(var(--erp-danger))]'}`}>
+              {m.up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+              {m.change} vs mes anterior
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 erp-card p-4">
+          <h3 className="font-heading font-semibold text-sm mb-3">Ventas de la Semana</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={ventasSemana}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 88%)" />
+              <XAxis dataKey="dia" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
+              <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`, 'Ventas']} />
+              <Bar dataKey="ventas" fill="hsl(212, 55%, 20%)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="erp-card p-4">
+          <h3 className="font-heading font-semibold text-sm mb-3">Ventas por Estado</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie data={ventasEstado} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" label={(props: any) => `${props.name} ${props.value > 1 ? `(${(props.value/1000).toFixed(0)}K)` : ''}`}>
+                {ventasEstado.map((_, i) => (
+                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`, 'Total']} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Trend + table row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="erp-card p-4">
+          <h3 className="font-heading font-semibold text-sm mb-3">Tendencia Mensual</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={ventasMensual}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 88%)" />
+              <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `${(v / 1000000).toFixed(1)}M`} />
+              <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`, 'Ventas']} />
+              <Area type="monotone" dataKey="ventas" stroke="hsl(174, 55%, 45%)" fill="hsl(174, 55%, 45%)" fillOpacity={0.15} strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="lg:col-span-2 erp-card">
+          <div className="px-4 py-3 border-b border-border">
+            <h3 className="font-heading font-semibold text-sm">Últimas Facturas</h3>
+          </div>
+          <div className="overflow-auto">
+            <table className="erp-table">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentInvoices.map((inv) => (
+                  <tr key={inv.num}>
+                    <td className="font-medium">{inv.num}</td>
+                    <td>{inv.date}</td>
+                    <td>{inv.client}</td>
+                    <td className="font-medium">{inv.total}</td>
+                    <td>
+                      <span className={`erp-badge ${
+                        inv.status === 'Cobrada' ? 'erp-badge-active' :
+                        inv.status === 'Pendiente' ? 'erp-badge-pending' : 'erp-badge-cancelled'
+                      }`}>{inv.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Top products */}
+      <div className="erp-card">
+        <div className="px-4 py-3 border-b border-border">
+          <h3 className="font-heading font-semibold text-sm">Top Productos del Mes</h3>
+        </div>
+        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {topProducts.map((p, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <span className="w-6 h-6 rounded bg-primary/10 text-primary text-xs flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <div className="min-w-0">
+                <div className="text-sm font-medium truncate">{p.name}</div>
+                <div className="text-xs text-muted-foreground">{p.qty} uds · {p.revenue}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
