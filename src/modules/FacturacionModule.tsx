@@ -3,7 +3,7 @@ import { Plus, Search, Filter, RefreshCw, Download, FileText, ShoppingCart, Clip
 import { useApp } from '@/context/AppContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate, formatTime } from '@/lib/utils';
 import { toast } from 'sonner';
 
 type DocType = 'FA' | 'PE' | 'CO';
@@ -71,8 +71,8 @@ export const FacturacionModule = () => {
   const [showNew, setShowNew] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   
-  // Usamos columnas explícitas para evitar errores de caché de esquema si itbis no existe
-  const { data, loading, add, update, refetch } = useCrud('facturas', 'id, numero_factura, tipo_doc, fecha, cliente_id, subtotal, impuesto, total, moneda, estado, created_at, updated_at, cliente:clientes(*)');
+  // Simplificamos la consulta al máximo para asegurar que cargue
+  const { data, loading, add, update, refetch } = useCrud('facturas', 'id, numero_factura, fecha, subtotal, impuesto, total, moneda, estado, created_at');
   const { data: clientes } = useCrud('clientes', 'id, nombre, rnc');
   const [saving, setSaving] = useState(false);
 
@@ -169,8 +169,8 @@ export const FacturacionModule = () => {
     const subtotalStr = formatCurrency(inv.subtotal, inv.moneda);
     const itbisStr = formatCurrency(inv.impuesto, inv.moneda);
     const totalStr = formatCurrency(inv.total, inv.moneda);
-    const dateStr = new Date().toLocaleDateString('es-DO');
-    const timeStr = new Date().toLocaleTimeString('es-DO');
+    const dateStr = formatDate(new Date());
+    const timeStr = formatTime(new Date());
 
     printWindow.document.write(`
       <html>
@@ -391,7 +391,7 @@ export const FacturacionModule = () => {
                         <td className="text-center">01</td>
                         <td className="font-medium">{inv.numero_factura}</td>
                         <td>{inv.fecha}</td>
-                        <td className="text-muted-foreground text-xs">{new Date(inv.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
+                        <td className="text-muted-foreground text-xs">{formatTime(inv.created_at)}</td>
                         <td>{inv.cliente?.nombre || 'Consumidor Final'}</td>
                         <td>{inv.moneda}</td>
                         <td className="text-right font-medium">{formatCurrency(inv.total, inv.moneda)}</td>

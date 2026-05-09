@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Search, Plus, Package, AlertTriangle, PenBox } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export const InventarioModule = () => {
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState<'stock' | 'movimientos'>('stock');
-  const { data: inventarioData, loading, update: updateProd } = useCrud('productos', 'id, codigo, nombre, categoria, unidad, precio, stock, created_at');
-  const { data: movimientos, add: addMov, update: updateMov } = useCrud('movimientos_inventario', 'id, producto_id, tipo, cantidad, referencia, created_at');
+  const { data: inventarioData, loading, update: updateProd } = useCrud('productos');
+  const { data: movimientos, add: addMov, update: updateMov } = useCrud('movimientos_inventario');
   const [showMov, setShowMov] = useState(false);
   const [showEditProd, setShowEditProd] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -263,7 +263,7 @@ export const InventarioModule = () => {
                     const prod = inventarioData.find(p => p.id === m.producto_id);
                     return (
                       <tr key={m.id} className="hover:bg-muted/30">
-                        <td>{new Date(m.created_at).toLocaleDateString('es-DO')}</td>
+                        <td>{formatDate(m.created_at)}</td>
                         <td>
                           <span className={`erp-badge ${m.tipo === 'Entrada' ? 'erp-badge-active' : 'erp-badge-pending'}`}>
                             {m.tipo}

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Search, UserCog } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
+import { formatDate } from '@/lib/utils';
 
 export const UsuariosModule = () => {
   const [search, setSearch] = useState('');
-  const { data: profiles, loading } = useCrud('usuarios', 'id, user_id, email, full_name, avatar_url, role, sucursal, created_at');
+  const { data: profiles, loading } = useCrud('usuarios');
 
   const filtered = profiles.filter(u => {
     const searchLower = search.toLowerCase();
@@ -83,7 +84,7 @@ export const UsuariosModule = () => {
                         </span>
                       </td>
                       <td className="text-muted-foreground text-xs">
-                        {u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}
+                        {formatDate(u.created_at)}
                       </td>
                       <td>
                         <span className="erp-badge erp-badge-active">Activo</span>

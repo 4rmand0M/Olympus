@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Search, Filter, DollarSign, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 
 export const CuentasCobrarModule = () => {
   const [filtro, setFiltro] = useState('Todos');
   const [search, setSearch] = useState('');
   const filtros = ['Todos', 'Vigente', 'Vencida', 'Cobrada'];
-  const { data: facturas, loading } = useCrud('facturas', 'id, numero_factura, fecha, total, moneda, estado, created_at, cliente:clientes(nombre)');
+  const { data: facturas, loading } = useCrud('facturas');
 
   const filtered = facturas.filter(f => {
     if (filtro !== 'Todos') {
@@ -88,7 +88,7 @@ export const CuentasCobrarModule = () => {
                   <td>{f.cliente?.nombre || 'Consumidor Final'}</td>
                   <td className="text-right">{formatCurrency(f.total)}</td>
                   <td className="text-right font-medium">{formatCurrency(f.total)}</td>
-                  <td>{f.fecha || f.created_at?.split('T')[0]}</td>
+                  <td>{formatDate(f.fecha || f.created_at)}</td>
                   <td>
                     <span className={`erp-badge ${
                       f.estado === 'Pendiente' ? 'erp-badge-pending' :
