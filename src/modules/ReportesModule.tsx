@@ -9,9 +9,9 @@ const COLORS = ['hsl(212, 55%, 20%)', 'hsl(174, 55%, 45%)', 'hsl(38, 92%, 50%)',
 export const ReportesModule = () => {
   const [tab, setTab] = useState<'graficos' | 'reportes'>('graficos');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const { data: facturas, loading } = useCrud('facturas');
-  const { data: movimientos } = useCrud('movimientos_inventario');
-  const { data: productos } = useCrud('productos');
+  const { data: facturas, loading } = useCrud('facturas', 'id, fecha, total, estado, created_at');
+  const { data: movimientos } = useCrud('movimientos_inventario', 'id, producto_id, tipo, cantidad, created_at');
+  const { data: productos } = useCrud('productos', 'id, nombre, precio');
 
   // Agregación para gráficos
   const hoy = new Date();

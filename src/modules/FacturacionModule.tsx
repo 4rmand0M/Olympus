@@ -50,10 +50,10 @@ const FormFields = ({ newFac, setNewFac, clientes, handleSubtotalChange, editing
         <input type="number" className="erp-input w-full mt-1" placeholder="0.00" value={newFac.subtotal || ''} onChange={e => handleSubtotalChange(Number(e.target.value))} />
       </div>
       <div><label className="text-xs text-muted-foreground">ITBIS (18%)</label>
-        <input type="number" className="erp-input w-full mt-1 bg-muted/50" value={newFac.itbis.toFixed(2)} readOnly />
+        <input type="number" className="erp-input w-full mt-1 bg-muted/50" value={(newFac.impuesto || 0).toFixed(2)} readOnly />
       </div>
       <div><label className="text-xs text-muted-foreground font-bold">Total</label>
-        <input type="number" className="erp-input w-full mt-1 bg-muted/50 font-bold" value={newFac.total.toFixed(2)} readOnly />
+        <input type="number" className="erp-input w-full mt-1 bg-muted/50 font-bold" value={(newFac.total || 0).toFixed(2)} readOnly />
       </div>
     </div>
     <div><label className="text-xs text-muted-foreground">Observaciones</label>
@@ -71,8 +71,9 @@ export const FacturacionModule = () => {
   const [showNew, setShowNew] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   
-  const { data, loading, add, update, refetch } = useCrud('facturas', '*, cliente:clientes(*)');
-  const { data: clientes } = useCrud('clientes');
+  // Usamos columnas explícitas para evitar errores de caché de esquema si itbis no existe
+  const { data, loading, add, update, refetch } = useCrud('facturas', 'id, numero_factura, tipo_doc, fecha, cliente_id, subtotal, impuesto, total, moneda, estado, created_at, updated_at, cliente:clientes(*)');
+  const { data: clientes } = useCrud('clientes', 'id, nombre, rnc');
   const [saving, setSaving] = useState(false);
 
   const initialFacState = {
@@ -80,7 +81,6 @@ export const FacturacionModule = () => {
     fecha: new Date().toISOString().split('T')[0],
     cliente_id: '',
     subtotal: 0,
-    itbis: 0,
     impuesto: 0,
     total: 0,
     moneda: 'RD$',
@@ -93,8 +93,8 @@ export const FacturacionModule = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleSubtotalChange = (subtotal: number) => {
-    const itbis = subtotal * 0.18;
-    setNewFac(prev => ({ ...prev, subtotal, itbis, impuesto: itbis, total: subtotal + itbis }));
+    const impuesto = subtotal * 0.18;
+    setNewFac(prev => ({ ...prev, subtotal, impuesto, total: subtotal + impuesto }));
   };
 
   const handleCreateOrUpdate = async () => {
@@ -110,13 +110,11 @@ export const FacturacionModule = () => {
           fecha: newFac.fecha,
           cliente_id: newFac.cliente_id || null,
           subtotal: newFac.subtotal,
-          itbis: newFac.itbis,
           impuesto: newFac.impuesto,
           total: newFac.total,
           moneda: newFac.moneda,
           metodo_pago: newFac.metodo_pago,
           estado: newFac.estado,
-          sucursal_id: activeSucursal.id,
         });
         toast.success("Documento actualizado exitosamente");
         setShowEdit(false);
@@ -128,13 +126,11 @@ export const FacturacionModule = () => {
           fecha: newFac.fecha,
           cliente_id: newFac.cliente_id || null,
           subtotal: newFac.subtotal,
-          itbis: newFac.itbis,
           impuesto: newFac.impuesto,
           total: newFac.total,
           moneda: newFac.moneda,
           metodo_pago: newFac.metodo_pago,
           estado: newFac.estado,
-          sucursal_id: activeSucursal.id,
         });
         toast.success("Documento creado exitosamente");
         setShowNew(false);
@@ -154,7 +150,6 @@ export const FacturacionModule = () => {
       fecha: inv.fecha || new Date().toISOString().split('T')[0],
       cliente_id: inv.cliente_id || '',
       subtotal: inv.subtotal,
-      itbis: inv.itbis || 0,
       impuesto: inv.impuesto || 0,
       total: inv.total,
       moneda: inv.moneda || 'RD$',

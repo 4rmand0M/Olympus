@@ -8,8 +8,8 @@ import { toast } from 'sonner';
 export const InventarioModule = () => {
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState<'stock' | 'movimientos'>('stock');
-  const { data: inventarioData, loading, update: updateProd } = useCrud('productos');
-  const { data: movimientos, add: addMov, update: updateMov } = useCrud('movimientos_inventario');
+  const { data: inventarioData, loading, update: updateProd } = useCrud('productos', 'id, codigo, nombre, categoria, unidad, precio, stock, created_at');
+  const { data: movimientos, add: addMov, update: updateMov } = useCrud('movimientos_inventario', 'id, producto_id, tipo, cantidad, referencia, created_at');
   const [showMov, setShowMov] = useState(false);
   const [showEditProd, setShowEditProd] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -19,7 +19,7 @@ export const InventarioModule = () => {
   
   const [editingProd, setEditingProd] = useState({ id: '', stock: 0, min_stock: 10 });
 
-  const lowStock = inventarioData.filter(i => i.stock < (i.min_stock || 10));
+  const lowStock = inventarioData.filter(i => i.stock < 10);
   const filtered = inventarioData.filter(i => {
     const searchLower = search.toLowerCase();
     return (
@@ -67,8 +67,7 @@ export const InventarioModule = () => {
     setSaving(true);
     try {
       await updateProd(editingProd.id, {
-        stock: editingProd.stock,
-        min_stock: editingProd.min_stock
+        stock: editingProd.stock
       });
       toast.success("Niveles de inventario actualizados");
       setShowEditProd(false);
@@ -94,7 +93,7 @@ export const InventarioModule = () => {
     setEditingProd({
       id: p.id,
       stock: p.stock,
-      min_stock: p.min_stock || 10
+      min_stock: 10
     });
     setShowEditProd(true);
   };
@@ -157,7 +156,7 @@ export const InventarioModule = () => {
               <input type="number" className="erp-input w-full mt-1" value={editingProd.stock} onChange={e => setEditingProd({...editingProd, stock: Number(e.target.value)})} />
             </div>
             <div><label className="text-xs text-muted-foreground">Stock Mínimo (Alerta)</label>
-              <input type="number" className="erp-input w-full mt-1" value={editingProd.min_stock} onChange={e => setEditingProd({...editingProd, min_stock: Number(e.target.value)})} />
+              <input type="number" className="erp-input w-full mt-1 bg-muted/50" value={10} readOnly />
             </div>
           </div>
           <DialogFooter>
@@ -213,7 +212,7 @@ export const InventarioModule = () => {
                 </thead>
                 <tbody>
                   {filtered.map(i => {
-                    const low = i.stock < (i.min_stock || 10);
+                    const low = i.stock < 10;
                     const costoSimulado = Number(i.precio || 0) * 0.7;
                     return (
                       <tr key={i.id} className="hover:bg-muted/30">
@@ -221,7 +220,7 @@ export const InventarioModule = () => {
                         <td>{i.nombre}</td>
                         <td className="text-muted-foreground">{i.categoria}</td>
                         <td className={`text-right font-medium ${low ? 'text-erp-danger' : ''}`}>{i.stock}</td>
-                        <td className="text-right text-muted-foreground">{i.min_stock || 10}</td>
+                        <td className="text-right text-muted-foreground">10</td>
                         <td className="text-right">{formatCurrency(costoSimulado)}</td>
                         <td className="text-right font-medium">{formatCurrency(i.stock * costoSimulado)}</td>
                         <td>

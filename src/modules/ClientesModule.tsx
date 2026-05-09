@@ -38,7 +38,7 @@ export const ClientesModule = () => {
   const initialClient = { nombre: '', rnc: '', telefono: '', email: '', ciudad: '', direccion: '', estado: 'Activo', balance: 0 };
   const [newClient, setNewClient] = useState(initialClient);
 
-  const { data, loading, add, update } = useCrud('clientes');
+  const { data, loading, add, update } = useCrud('clientes', 'id, nombre, rnc, telefono, email, ciudad, direccion, estado, balance, created_at');
 
   const filtered = data.filter(c => {
     const searchLower = search.toLowerCase();

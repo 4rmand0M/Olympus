@@ -35,7 +35,7 @@ export const ProductosModule = () => {
   const initialProduct = { codigo: '', nombre: '', categoria: 'Electrodomésticos', unidad: 'UNIDAD', precio: 0, stock: 0 };
   const [newProduct, setNewProduct] = useState(initialProduct);
 
-  const { data, loading, add, update } = useCrud('productos');
+  const { data, loading, add, update } = useCrud('productos', 'id, codigo, nombre, categoria, unidad, precio, stock, created_at');
   
   const filtered = data.filter(p => {
     const searchLower = search.toLowerCase();

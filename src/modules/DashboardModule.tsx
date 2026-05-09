@@ -11,10 +11,10 @@ import { formatCurrency, formatNumber } from '@/lib/utils';
 
 export const DashboardModule = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const { data: facturas, loading: loadingFacturas } = useCrud('facturas');
-  const { data: clientes } = useCrud('clientes');
-  const { data: productos } = useCrud('productos');
-  const { data: movimientos } = useCrud('movimientos_inventario');
+  const { data: facturas, loading: loadingFacturas } = useCrud('facturas', 'id, numero_factura, tipo_doc, fecha, total, moneda, estado, created_at, cliente:clientes(nombre)');
+  const { data: clientes } = useCrud('clientes', 'id, nombre');
+  const { data: productos } = useCrud('productos', 'id, nombre, precio');
+  const { data: movimientos } = useCrud('movimientos_inventario', 'id, producto_id, tipo, cantidad');
 
   // Metrics calculation
   // Excluir canceladas de las ventas y cuentas por cobrar

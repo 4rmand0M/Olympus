@@ -7,7 +7,7 @@ export const CuentasCobrarModule = () => {
   const [filtro, setFiltro] = useState('Todos');
   const [search, setSearch] = useState('');
   const filtros = ['Todos', 'Vigente', 'Vencida', 'Cobrada'];
-  const { data: facturas, loading } = useCrud('facturas');
+  const { data: facturas, loading } = useCrud('facturas', 'id, numero_factura, fecha, total, moneda, estado, created_at, cliente:clientes(nombre)');
 
   const filtered = facturas.filter(f => {
     if (filtro !== 'Todos') {
