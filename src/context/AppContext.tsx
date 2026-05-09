@@ -23,9 +23,9 @@ interface AppContextType {
 }
 
 const initialSucursales: Sucursal[] = [
-  { id: '1', name: 'OLYMPUS S.R.L - SEDE CENTRAL' },
-  { id: '2', name: 'OLYMPUS S.R.L - SUCURSAL NORTE' },
-  { id: '3', name: 'OLYMPUS S.R.L - SUCURSAL SUR' },
+  { id: '10000000-0000-0000-0000-000000000001', name: 'OLYMPUS S.R.L - SEDE CENTRAL' },
+  { id: '10000000-0000-0000-0000-000000000002', name: 'OLYMPUS S.R.L - SUCURSAL NORTE' },
+  { id: '10000000-0000-0000-0000-000000000003', name: 'OLYMPUS S.R.L - SUCURSAL SUR' },
 ];
 
 const AppContext = createContext<AppContextType | null>(null);

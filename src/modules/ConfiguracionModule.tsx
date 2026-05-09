@@ -201,7 +201,10 @@ export const ConfiguracionModule = () => {
               <h3 className="font-heading font-semibold">Configuración Regional</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div><label className="text-xs text-muted-foreground">Moneda</label>
-                  <select className="erp-input w-full mt-1"><option>RD$ - Peso Dominicano</option><option>US$ - Dólar</option></select>
+                  <select className="erp-input w-full mt-1">
+                    <option value="RD$">RD$ - Peso Dominicano</option>
+                    <option value="USD">US$ - Dólar</option>
+                  </select>
                 </div>
                 <div><label className="text-xs text-muted-foreground">Formato de Fecha</label>
                   <select className="erp-input w-full mt-1"><option>DD-MM-YYYY</option><option>MM-DD-YYYY</option><option>YYYY-MM-DD</option></select>

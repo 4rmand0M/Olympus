@@ -33,9 +33,11 @@ export const FacturacionModule = () => {
     fecha: new Date().toISOString().split('T')[0],
     cliente_id: '',
     subtotal: 0,
+    itbis: 0,
     impuesto: 0,
     total: 0,
-    moneda: 'RDS',
+    tipo_moneda: 'RD$',
+    metodo_pago: 'Contado',
     estado: 'Pendiente',
     observaciones: '',
   };
@@ -44,8 +46,8 @@ export const FacturacionModule = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleSubtotalChange = (subtotal: number, isEdit = false) => {
-    const impuesto = subtotal * 0.18;
-    setNewFac(prev => ({ ...prev, subtotal, impuesto, total: subtotal + impuesto }));
+    const itbis = subtotal * 0.18;
+    setNewFac(prev => ({ ...prev, subtotal, itbis, impuesto: itbis, total: subtotal + itbis }));
   };
 
   const handleCreateOrUpdate = async () => {
@@ -59,12 +61,15 @@ export const FacturacionModule = () => {
         await update(editingId, {
           tipo_doc: newFac.tipo_doc,
           fecha: newFac.fecha,
-          cliente_id: newFac.cliente_id || null, // Handle specific columns
+          cliente_id: newFac.cliente_id || null,
           subtotal: newFac.subtotal,
+          itbis: newFac.itbis,
           impuesto: newFac.impuesto,
           total: newFac.total,
-          moneda: newFac.moneda,
+          tipo_moneda: newFac.tipo_moneda,
+          metodo_pago: newFac.metodo_pago,
           estado: newFac.estado,
+          sucursal_id: activeSucursal.id,
         });
         toast.success("Documento actualizado exitosamente");
         setShowEdit(false);
@@ -76,10 +81,13 @@ export const FacturacionModule = () => {
           fecha: newFac.fecha,
           cliente_id: newFac.cliente_id || null,
           subtotal: newFac.subtotal,
+          itbis: newFac.itbis,
           impuesto: newFac.impuesto,
           total: newFac.total,
-          moneda: newFac.moneda,
+          tipo_moneda: newFac.tipo_moneda,
+          metodo_pago: newFac.metodo_pago,
           estado: newFac.estado,
+          sucursal_id: activeSucursal.id,
         });
         toast.success("Documento creado exitosamente");
         setShowNew(false);
@@ -99,9 +107,11 @@ export const FacturacionModule = () => {
       fecha: inv.fecha || new Date().toISOString().split('T')[0],
       cliente_id: inv.cliente_id || '',
       subtotal: inv.subtotal,
-      impuesto: inv.impuesto,
+      itbis: inv.itbis || 0,
+      impuesto: inv.impuesto || 0,
       total: inv.total,
-      moneda: inv.moneda,
+      tipo_moneda: inv.tipo_moneda || 'RD$',
+      metodo_pago: inv.metodo_pago || 'Contado',
       estado: inv.estado || 'Pendiente',
       observaciones: inv.observaciones || '',
     });
@@ -170,7 +180,7 @@ export const FacturacionModule = () => {
             <tbody>
               <tr>
                 <td>Servicios / Productos Facturados</td>
-                <td class="text-right">${inv.moneda} ${Number(inv.subtotal).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+                <td class="text-right">${inv.tipo_moneda} ${Number(inv.subtotal).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
               </tr>
             </tbody>
           </table>
@@ -178,15 +188,15 @@ export const FacturacionModule = () => {
           <div class="totals">
             <div class="totals-row">
               <span>Subtotal:</span>
-              <span>${inv.moneda} ${Number(inv.subtotal).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
+              <span>${inv.tipo_moneda} ${Number(inv.subtotal).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
             </div>
             <div class="totals-row">
                <span>ITBIS (18%):</span>
-               <span>${inv.moneda} ${Number(inv.impuesto).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
+               <span>${inv.tipo_moneda} ${Number(inv.impuesto).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
             </div>
             <div class="totals-row grand-total">
                <span>TOTAL A PAGAR:</span>
-               <span>${inv.moneda} ${Number(inv.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
+               <span>${inv.tipo_moneda} ${Number(inv.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
 
@@ -238,8 +248,8 @@ export const FacturacionModule = () => {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div><label className="text-xs text-muted-foreground">Moneda</label>
-          <select className="erp-input w-full mt-1" value={newFac.moneda} onChange={e => setNewFac({...newFac, moneda: e.target.value})}>
-            <option value="RDS">RD$</option><option value="USD">US$</option>
+          <select className="erp-input w-full mt-1" value={newFac.tipo_moneda} onChange={e => setNewFac({...newFac, tipo_moneda: e.target.value})}>
+            <option value="RD$">RD$</option><option value="USD">US$</option>
           </select>
         </div>
         <div><label className="text-xs text-muted-foreground">Estado</label>
@@ -374,7 +384,7 @@ export const FacturacionModule = () => {
                         <td>{inv.fecha}</td>
                         <td className="text-muted-foreground text-xs">{new Date(inv.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
                         <td>{inv.cliente?.nombre || 'Consumidor Final'}</td>
-                        <td>{inv.moneda}</td>
+                        <td>{inv.tipo_moneda}</td>
                         <td className="text-right font-medium">{Number(inv.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
                         <td>
                           <span className={`erp-badge ${inv.estado === 'Cobrada' ? 'erp-badge-active' : inv.estado === 'Pendiente' ? 'erp-badge-pending' : 'erp-badge-cancelled'}`}>{inv.estado}</span>
