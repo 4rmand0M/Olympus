@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Search, PenBox } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -88,7 +88,10 @@ export const ProductosModule = () => {
 
       <Dialog open={showNew || showEdit} onOpenChange={(open) => { if(!open){ setShowNew(false); setShowEdit(false); } }}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{showEdit ? 'Editar Producto' : 'Nuevo Producto'}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{showEdit ? 'Editar Producto' : 'Nuevo Producto'}</DialogTitle>
+            <DialogDescription>Ingrese los detalles del producto o servicio.</DialogDescription>
+          </DialogHeader>
           <FormFields newProduct={newProduct} setNewProduct={setNewProduct} editingId={editingId} />
           <DialogFooter>
             <button className="erp-btn erp-btn-secondary" onClick={() => { setShowNew(false); setShowEdit(false); }}>Cancelar</button>

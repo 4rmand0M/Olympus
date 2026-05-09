@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Search, Plus, Package, AlertTriangle, PenBox } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -113,7 +113,10 @@ export const InventarioModule = () => {
       {/* Dialog Registro/Edición de movimiento */}
       <Dialog open={showMov} onOpenChange={setShowMov}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editingMovId ? 'Editar Movimiento' : 'Registrar Movimiento'}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingMovId ? 'Editar Movimiento' : 'Registrar Movimiento'}</DialogTitle>
+            <DialogDescription>Registre entradas o salidas de productos del inventario.</DialogDescription>
+          </DialogHeader>
           <div className="space-y-3 py-2">
             <div><label className="text-xs text-muted-foreground">Producto *</label>
               <select className="erp-input w-full mt-1" value={newMov.producto_id} onChange={e => setNewMov({...newMov, producto_id: e.target.value})}>
@@ -145,7 +148,10 @@ export const InventarioModule = () => {
       {/* Dialog Modificación Stock de Producto */}
       <Dialog open={showEditProd} onOpenChange={setShowEditProd}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Ajustar Inventario</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Ajustar Inventario</DialogTitle>
+            <DialogDescription>Modifique el stock actual y los niveles de alerta.</DialogDescription>
+          </DialogHeader>
           <div className="space-y-3 py-2">
             <div><label className="text-xs text-muted-foreground">Stock Actual</label>
               <input type="number" className="erp-input w-full mt-1" value={editingProd.stock} onChange={e => setEditingProd({...editingProd, stock: Number(e.target.value)})} />

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Building2, Receipt, Printer, Bell, Database, Globe, MapPin, Pencil, Check, X } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 
 const sections = [
   { id: 'empresa', label: 'Empresa', icon: Building2 },
@@ -120,7 +120,10 @@ export const ConfiguracionModule = () => {
 
               <Dialog open={showAddSucursal} onOpenChange={setShowAddSucursal}>
                 <DialogContent>
-                  <DialogHeader><DialogTitle>Nueva Sucursal</DialogTitle></DialogHeader>
+                  <DialogHeader>
+                    <DialogTitle>Nueva Sucursal</DialogTitle>
+                    <DialogDescription>Añada una nueva ubicación física para su empresa.</DialogDescription>
+                  </DialogHeader>
                   <div className="space-y-3 py-2">
                     <div>
                       <label className="text-xs text-muted-foreground">Nombre de la Sucursal</label>

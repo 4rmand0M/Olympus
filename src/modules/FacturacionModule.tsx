@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Search, Filter, RefreshCw, Download, FileText, ShoppingCart, ClipboardList, PenBox, Printer } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -296,7 +296,10 @@ export const FacturacionModule = () => {
 
       <Dialog open={showNew || showEdit} onOpenChange={(open) => { if(!open) { setShowNew(false); setShowEdit(false); } }}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{showEdit ? 'Editar Documento' : 'Nuevo Documento'}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{showEdit ? 'Editar Documento' : 'Nuevo Documento'}</DialogTitle>
+            <DialogDescription>Complete los datos del documento de facturación abajo.</DialogDescription>
+          </DialogHeader>
           <FormFields 
             newFac={newFac} 
             setNewFac={setNewFac} 
