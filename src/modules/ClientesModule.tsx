@@ -5,6 +5,30 @@ import { useCrud } from '@/hooks/useCrud';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 
+const FormFields = ({ newClient, setNewClient, editingId }: any) => (
+  <div className="space-y-3 py-2">
+    <div className="grid grid-cols-2 gap-3">
+      <div><label className="text-xs text-muted-foreground bg-bac">Nombre / Razón Social *</label><input className="erp-input w-full mt-1" placeholder="Ej: Empresa SRL" value={newClient.nombre} onChange={e => setNewClient({...newClient, nombre: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">RNC / Cédula</label><input className="erp-input w-full mt-1" placeholder="000000000000" value={newClient.rnc} onChange={e => setNewClient({...newClient, rnc: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Teléfono</label><input className="erp-input w-full mt-1" placeholder="809-000-0000" value={newClient.telefono} onChange={e => setNewClient({...newClient, telefono: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Email</label><input className="erp-input w-full mt-1" type="email" placeholder="email@ejemplo.com" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Ciudad</label><input className="erp-input w-full mt-1" placeholder="Santo Domingo" value={newClient.ciudad} onChange={e => setNewClient({...newClient, ciudad: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Dirección</label><input className="erp-input w-full mt-1" placeholder="Calle, Sector" value={newClient.direccion} onChange={e => setNewClient({...newClient, direccion: e.target.value})} /></div>
+      {editingId && (
+        <>
+          <div><label className="text-xs text-muted-foreground">Estado</label>
+            <select className="erp-input w-full mt-1" value={newClient.estado} onChange={e => setNewClient({...newClient, estado: e.target.value})}>
+              <option value="Activo">Activo</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div><label className="text-xs text-muted-foreground">Balance</label><input className="erp-input w-full mt-1" type="number" placeholder="0.00" value={newClient.balance} onChange={e => setNewClient({...newClient, balance: Number(e.target.value)})} /></div>
+        </>
+      )}
+    </div>
+  </div>
+);
+
 export const ClientesModule = () => {
   const [search, setSearch] = useState('');
   const [showNew, setShowNew] = useState(false);
@@ -59,32 +83,6 @@ export const ClientesModule = () => {
     setEditingId(client.id);
     setShowEdit(true);
   };
-
-const FormFields = ({ newClient, setNewClient, editingId }: any) => (
-  <div className="space-y-3 py-2">
-    <div className="grid grid-cols-2 gap-3">
-      <div><label className="text-xs text-muted-foreground bg-bac">Nombre / Razón Social *</label><input className="erp-input w-full mt-1" placeholder="Ej: Empresa SRL" value={newClient.nombre} onChange={e => setNewClient({...newClient, nombre: e.target.value})} /></div>
-      <div><label className="text-xs text-muted-foreground">RNC / Cédula</label><input className="erp-input w-full mt-1" placeholder="000000000000" value={newClient.rnc} onChange={e => setNewClient({...newClient, rnc: e.target.value})} /></div>
-      <div><label className="text-xs text-muted-foreground">Teléfono</label><input className="erp-input w-full mt-1" placeholder="809-000-0000" value={newClient.telefono} onChange={e => setNewClient({...newClient, telefono: e.target.value})} /></div>
-      <div><label className="text-xs text-muted-foreground">Email</label><input className="erp-input w-full mt-1" type="email" placeholder="email@ejemplo.com" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} /></div>
-      <div><label className="text-xs text-muted-foreground">Ciudad</label><input className="erp-input w-full mt-1" placeholder="Santo Domingo" value={newClient.ciudad} onChange={e => setNewClient({...newClient, ciudad: e.target.value})} /></div>
-      <div><label className="text-xs text-muted-foreground">Dirección</label><input className="erp-input w-full mt-1" placeholder="Calle, Sector" value={newClient.direccion} onChange={e => setNewClient({...newClient, direccion: e.target.value})} /></div>
-      {editingId && (
-        <>
-          <div><label className="text-xs text-muted-foreground">Estado</label>
-            <select className="erp-input w-full mt-1" value={newClient.estado} onChange={e => setNewClient({...newClient, estado: e.target.value})}>
-              <option value="Activo">Activo</option>
-              <option value="Cancelado">Cancelado</option>
-            </select>
-          </div>
-          <div><label className="text-xs text-muted-foreground">Balance</label><input className="erp-input w-full mt-1" type="number" placeholder="0.00" value={newClient.balance} onChange={e => setNewClient({...newClient, balance: Number(e.target.value)})} /></div>
-        </>
-      )}
-    </div>
-  </div>
-);
-
-export const ClientesModule = () => {
 
   return (
     <div className="space-y-3">

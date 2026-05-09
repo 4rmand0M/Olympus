@@ -5,6 +5,27 @@ import { useCrud } from '@/hooks/useCrud';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 
+const FormFields = ({ newProduct, setNewProduct, editingId }: any) => (
+  <div className="space-y-3 py-2">
+    <div className="grid grid-cols-2 gap-3">
+      <div><label className="text-xs text-muted-foreground">Código *</label><input className="erp-input w-full mt-1" placeholder="PRO-XXXX" value={newProduct.codigo} onChange={e => setNewProduct({...newProduct, codigo: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Nombre *</label><input className="erp-input w-full mt-1" placeholder="Descripción del producto" value={newProduct.nombre} onChange={e => setNewProduct({...newProduct, nombre: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Categoría</label>
+        <select className="erp-input w-full mt-1" value={newProduct.categoria} onChange={e => setNewProduct({...newProduct, categoria: e.target.value})}>
+          <option>Electrodomésticos</option><option>Limpieza</option><option>Alimentos</option><option>Ferretería</option>
+        </select>
+      </div>
+      <div><label className="text-xs text-muted-foreground">Unidad</label>
+        <select className="erp-input w-full mt-1" value={newProduct.unidad} onChange={e => setNewProduct({...newProduct, unidad: e.target.value})}>
+          <option>UNIDAD</option><option>SACO</option><option>CAJA</option><option>GALÓN</option>
+        </select>
+      </div>
+      <div><label className="text-xs text-muted-foreground">Precio (RD$)</label><input type="number" className="erp-input w-full mt-1" placeholder="0.00" value={newProduct.precio} onChange={e => setNewProduct({...newProduct, precio: Number(e.target.value)})} /></div>
+      <div><label className="text-xs text-muted-foreground">{editingId ? 'Stock Actual' : 'Stock Inicial'}</label><input type="number" className="erp-input w-full mt-1" placeholder="0" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: Number(e.target.value)})} /></div>
+    </div>
+  </div>
+);
+
 export const ProductosModule = () => {
   const [search, setSearch] = useState('');
   const [showNew, setShowNew] = useState(false);
@@ -57,29 +78,6 @@ export const ProductosModule = () => {
     setEditingId(prod.id);
     setShowEdit(true);
   };
-
-const FormFields = ({ newProduct, setNewProduct, editingId }: any) => (
-  <div className="space-y-3 py-2">
-    <div className="grid grid-cols-2 gap-3">
-      <div><label className="text-xs text-muted-foreground">Código *</label><input className="erp-input w-full mt-1" placeholder="PRO-XXXX" value={newProduct.codigo} onChange={e => setNewProduct({...newProduct, codigo: e.target.value})} /></div>
-      <div><label className="text-xs text-muted-foreground">Nombre *</label><input className="erp-input w-full mt-1" placeholder="Descripción del producto" value={newProduct.nombre} onChange={e => setNewProduct({...newProduct, nombre: e.target.value})} /></div>
-      <div><label className="text-xs text-muted-foreground">Categoría</label>
-        <select className="erp-input w-full mt-1" value={newProduct.categoria} onChange={e => setNewProduct({...newProduct, categoria: e.target.value})}>
-          <option>Electrodomésticos</option><option>Limpieza</option><option>Alimentos</option><option>Ferretería</option>
-        </select>
-      </div>
-      <div><label className="text-xs text-muted-foreground">Unidad</label>
-        <select className="erp-input w-full mt-1" value={newProduct.unidad} onChange={e => setNewProduct({...newProduct, unidad: e.target.value})}>
-          <option>UNIDAD</option><option>SACO</option><option>CAJA</option><option>GALÓN</option>
-        </select>
-      </div>
-      <div><label className="text-xs text-muted-foreground">Precio (RD$)</label><input type="number" className="erp-input w-full mt-1" placeholder="0.00" value={newProduct.precio} onChange={e => setNewProduct({...newProduct, precio: Number(e.target.value)})} /></div>
-      <div><label className="text-xs text-muted-foreground">{editingId ? 'Stock Actual' : 'Stock Inicial'}</label><input type="number" className="erp-input w-full mt-1" placeholder="0" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: Number(e.target.value)})} /></div>
-    </div>
-  </div>
-);
-
-export const ProductosModule = () => {
 
   return (
     <div className="space-y-3">
