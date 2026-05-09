@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search, Plus, Package, AlertTriangle, PenBox } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
+import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export const InventarioModule = () => {
@@ -215,8 +216,8 @@ export const InventarioModule = () => {
                         <td className="text-muted-foreground">{i.categoria}</td>
                         <td className={`text-right font-medium ${low ? 'text-erp-danger' : ''}`}>{i.stock}</td>
                         <td className="text-right text-muted-foreground">{i.min_stock || 10}</td>
-                        <td className="text-right">RD$ {costoSimulado.toLocaleString('es-DO', { maximumFractionDigits: 2 })}</td>
-                        <td className="text-right font-medium">RD$ {(i.stock * costoSimulado).toLocaleString('es-DO', { maximumFractionDigits: 2 })}</td>
+                        <td className="text-right">{formatCurrency(costoSimulado)}</td>
+                        <td className="text-right font-medium">{formatCurrency(i.stock * costoSimulado)}</td>
                         <td>
                           <span className={`erp-badge ${low ? 'erp-badge-cancelled' : 'erp-badge-active'}`}>
                             {low ? 'Bajo' : 'OK'}

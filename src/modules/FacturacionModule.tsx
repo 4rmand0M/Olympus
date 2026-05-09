@@ -3,6 +3,7 @@ import { Plus, Search, Filter, RefreshCw, Download, FileText, ShoppingCart, Clip
 import { useApp } from '@/context/AppContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
+import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 
 type DocType = 'FA' | 'PE' | 'CO';
@@ -14,6 +15,53 @@ const docTypes = [
   { id: 'CO', label: 'Cotización', icon: ClipboardList },
 ];
 
+const FormFields = ({ newFac, setNewFac, clientes, handleSubtotalChange, editingId }: any) => (
+  <div className="space-y-3 py-2">
+    <div className="grid grid-cols-2 gap-3">
+      <div><label className="text-xs text-muted-foreground">Tipo de Documento</label>
+        <select className="erp-input w-full mt-1" value={newFac.tipo_doc} onChange={e => setNewFac({...newFac, tipo_doc: e.target.value})}>
+          <option value="FA">Factura</option><option value="PE">Pedido</option><option value="CO">Cotización</option>
+        </select>
+      </div>
+      <div><label className="text-xs text-muted-foreground">Fecha</label>
+        <input type="date" className="erp-input w-full mt-1" value={newFac.fecha} onChange={e => setNewFac({...newFac, fecha: e.target.value})} />
+      </div>
+    </div>
+    <div><label className="text-xs text-muted-foreground">Cliente</label>
+      <select className="erp-input w-full mt-1" value={newFac.cliente_id} onChange={e => setNewFac({...newFac, cliente_id: e.target.value})}>
+        <option value="">Consumidor Final</option>
+        {clientes.map((c: any) => <option key={c.id} value={c.id}>{c.nombre} {c.rnc ? `(${c.rnc})` : ''}</option>)}
+      </select>
+    </div>
+    <div className="grid grid-cols-2 gap-3">
+      <div><label className="text-xs text-muted-foreground">Tipo de Moneda</label>
+        <select className="erp-input w-full mt-1" value={newFac.moneda} onChange={e => setNewFac({...newFac, moneda: e.target.value})}>
+          <option value="RD$">RD$</option><option value="USD">US$</option>
+        </select>
+      </div>
+      <div><label className="text-xs text-muted-foreground">Estado</label>
+        <select className="erp-input w-full mt-1" value={newFac.estado} onChange={e => setNewFac({...newFac, estado: e.target.value})}>
+          <option value="Pendiente">Pendiente</option><option value="Cobrada">Cobrada</option><option value="Cancelada">Cancelada</option>
+        </select>
+      </div>
+    </div>
+    <div className="grid grid-cols-3 gap-3">
+      <div><label className="text-xs text-muted-foreground">Subtotal *</label>
+        <input type="number" className="erp-input w-full mt-1" placeholder="0.00" value={newFac.subtotal || ''} onChange={e => handleSubtotalChange(Number(e.target.value))} />
+      </div>
+      <div><label className="text-xs text-muted-foreground">ITBIS (18%)</label>
+        <input type="number" className="erp-input w-full mt-1 bg-muted/50" value={newFac.itbis.toFixed(2)} readOnly />
+      </div>
+      <div><label className="text-xs text-muted-foreground font-bold">Total</label>
+        <input type="number" className="erp-input w-full mt-1 bg-muted/50 font-bold" value={newFac.total.toFixed(2)} readOnly />
+      </div>
+    </div>
+    <div><label className="text-xs text-muted-foreground">Observaciones</label>
+      <textarea className="erp-input w-full mt-1" rows={2} placeholder="Notas adicionales..." value={newFac.observaciones} onChange={e => setNewFac({...newFac, observaciones: e.target.value})} />
+    </div>
+  </div>
+);
+
 export const FacturacionModule = () => {
   const { activeSucursal } = useApp();
   const [activeDocType, setActiveDocType] = useState<DocType>('FA');
@@ -23,7 +71,6 @@ export const FacturacionModule = () => {
   const [showNew, setShowNew] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   
-  // Notice we now join with clientes
   const { data, loading, add, update, refetch } = useCrud('facturas', '*, cliente:clientes(*)');
   const { data: clientes } = useCrud('clientes');
   const [saving, setSaving] = useState(false);
@@ -36,7 +83,7 @@ export const FacturacionModule = () => {
     itbis: 0,
     impuesto: 0,
     total: 0,
-    tipo_moneda: 'RD$',
+    moneda: 'RD$',
     metodo_pago: 'Contado',
     estado: 'Pendiente',
     observaciones: '',
@@ -45,7 +92,7 @@ export const FacturacionModule = () => {
   const [newFac, setNewFac] = useState(initialFacState);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const handleSubtotalChange = (subtotal: number, isEdit = false) => {
+  const handleSubtotalChange = (subtotal: number) => {
     const itbis = subtotal * 0.18;
     setNewFac(prev => ({ ...prev, subtotal, itbis, impuesto: itbis, total: subtotal + itbis }));
   };
@@ -66,7 +113,7 @@ export const FacturacionModule = () => {
           itbis: newFac.itbis,
           impuesto: newFac.impuesto,
           total: newFac.total,
-          tipo_moneda: newFac.tipo_moneda,
+          moneda: newFac.moneda,
           metodo_pago: newFac.metodo_pago,
           estado: newFac.estado,
           sucursal_id: activeSucursal.id,
@@ -84,7 +131,7 @@ export const FacturacionModule = () => {
           itbis: newFac.itbis,
           impuesto: newFac.impuesto,
           total: newFac.total,
-          tipo_moneda: newFac.tipo_moneda,
+          moneda: newFac.moneda,
           metodo_pago: newFac.metodo_pago,
           estado: newFac.estado,
           sucursal_id: activeSucursal.id,
@@ -94,9 +141,9 @@ export const FacturacionModule = () => {
       }
       setNewFac(initialFacState);
       setEditingId(null);
+      refetch();
     } catch (e) {
       console.error(e);
-      toast.error("Error al guardar documento");
     }
     setSaving(false);
   };
@@ -110,7 +157,7 @@ export const FacturacionModule = () => {
       itbis: inv.itbis || 0,
       impuesto: inv.impuesto || 0,
       total: inv.total,
-      tipo_moneda: inv.tipo_moneda || 'RD$',
+      moneda: inv.moneda || 'RD$',
       metodo_pago: inv.metodo_pago || 'Contado',
       estado: inv.estado || 'Pendiente',
       observaciones: inv.observaciones || '',
@@ -124,7 +171,12 @@ export const FacturacionModule = () => {
     if (!printWindow) return;
     
     const isDoc = inv.tipo_doc === 'FA' ? 'Factura' : inv.tipo_doc === 'PE' ? 'Pedido' : 'Cotización';
-    
+    const subtotalStr = formatCurrency(inv.subtotal, inv.moneda);
+    const itbisStr = formatCurrency(inv.impuesto, inv.moneda);
+    const totalStr = formatCurrency(inv.total, inv.moneda);
+    const dateStr = new Date().toLocaleDateString('es-DO');
+    const timeStr = new Date().toLocaleTimeString('es-DO');
+
     printWindow.document.write(`
       <html>
         <head>
@@ -180,7 +232,7 @@ export const FacturacionModule = () => {
             <tbody>
               <tr>
                 <td>Servicios / Productos Facturados</td>
-                <td class="text-right">${inv.tipo_moneda} ${Number(inv.subtotal).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+                <td class="text-right">${subtotalStr}</td>
               </tr>
             </tbody>
           </table>
@@ -188,21 +240,21 @@ export const FacturacionModule = () => {
           <div class="totals">
             <div class="totals-row">
               <span>Subtotal:</span>
-              <span>${inv.tipo_moneda} ${Number(inv.subtotal).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
+              <span>${subtotalStr}</span>
             </div>
             <div class="totals-row">
                <span>ITBIS (18%):</span>
-               <span>${inv.tipo_moneda} ${Number(inv.impuesto).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
+               <span>${itbisStr}</span>
             </div>
             <div class="totals-row grand-total">
                <span>TOTAL A PAGAR:</span>
-               <span>${inv.tipo_moneda} ${Number(inv.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</span>
+               <span>${totalStr}</span>
             </div>
           </div>
 
           <div class="footer">
             <p>¡Gracias por preferir Olympus Billing Systems!</p>
-            <p>Documento generado el ${new Date().toLocaleString()}</p>
+            <p>Documento generado el ${dateStr} ${timeStr}</p>
           </div>
         </body>
       </html>
@@ -228,53 +280,6 @@ export const FacturacionModule = () => {
     return true;
   });
 
-  const FormFields = () => (
-    <div className="space-y-3 py-2">
-      <div className="grid grid-cols-2 gap-3">
-        <div><label className="text-xs text-muted-foreground">Tipo de Documento</label>
-          <select className="erp-input w-full mt-1" value={newFac.tipo_doc} onChange={e => setNewFac({...newFac, tipo_doc: e.target.value})}>
-            <option value="FA">Factura</option><option value="PE">Pedido</option><option value="CO">Cotización</option>
-          </select>
-        </div>
-        <div><label className="text-xs text-muted-foreground">Fecha</label>
-          <input type="date" className="erp-input w-full mt-1" value={newFac.fecha} onChange={e => setNewFac({...newFac, fecha: e.target.value})} />
-        </div>
-      </div>
-      <div><label className="text-xs text-muted-foreground">Cliente</label>
-        <select className="erp-input w-full mt-1" value={newFac.cliente_id} onChange={e => setNewFac({...newFac, cliente_id: e.target.value})}>
-          <option value="">Consumidor Final</option>
-          {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.rnc ? `(${c.rnc})` : ''}</option>)}
-        </select>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div><label className="text-xs text-muted-foreground">Moneda</label>
-          <select className="erp-input w-full mt-1" value={newFac.tipo_moneda} onChange={e => setNewFac({...newFac, tipo_moneda: e.target.value})}>
-            <option value="RD$">RD$</option><option value="USD">US$</option>
-          </select>
-        </div>
-        <div><label className="text-xs text-muted-foreground">Estado</label>
-          <select className="erp-input w-full mt-1" value={newFac.estado} onChange={e => setNewFac({...newFac, estado: e.target.value})}>
-            <option value="Pendiente">Pendiente</option><option value="Cobrada">Cobrada</option><option value="Cancelada">Cancelada</option>
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        <div><label className="text-xs text-muted-foreground">Subtotal *</label>
-          <input type="number" className="erp-input w-full mt-1" placeholder="0.00" value={newFac.subtotal || ''} onChange={e => handleSubtotalChange(Number(e.target.value), !!editingId)} />
-        </div>
-        <div><label className="text-xs text-muted-foreground">ITBIS (18%)</label>
-          <input type="number" className="erp-input w-full mt-1 bg-muted/50" value={newFac.impuesto.toFixed(2)} readOnly />
-        </div>
-        <div><label className="text-xs text-muted-foreground font-bold">Total</label>
-          <input type="number" className="erp-input w-full mt-1 bg-muted/50 font-bold" value={newFac.total.toFixed(2)} readOnly />
-        </div>
-      </div>
-      <div><label className="text-xs text-muted-foreground">Observaciones</label>
-        <textarea className="erp-input w-full mt-1" rows={2} placeholder="Notas adicionales..." value={newFac.observaciones} onChange={e => setNewFac({...newFac, observaciones: e.target.value})} />
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -292,7 +297,13 @@ export const FacturacionModule = () => {
       <Dialog open={showNew || showEdit} onOpenChange={(open) => { if(!open) { setShowNew(false); setShowEdit(false); } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{showEdit ? 'Editar Documento' : 'Nuevo Documento'}</DialogTitle></DialogHeader>
-          <FormFields />
+          <FormFields 
+            newFac={newFac} 
+            setNewFac={setNewFac} 
+            clientes={clientes} 
+            handleSubtotalChange={handleSubtotalChange} 
+            editingId={editingId} 
+          />
           <DialogFooter>
             <button className="erp-btn erp-btn-secondary" onClick={() => { setShowNew(false); setShowEdit(false); }}>Cancelar</button>
             <button className="erp-btn erp-btn-primary" onClick={handleCreateOrUpdate} disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</button>
@@ -384,8 +395,8 @@ export const FacturacionModule = () => {
                         <td>{inv.fecha}</td>
                         <td className="text-muted-foreground text-xs">{new Date(inv.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
                         <td>{inv.cliente?.nombre || 'Consumidor Final'}</td>
-                        <td>{inv.tipo_moneda}</td>
-                        <td className="text-right font-medium">{Number(inv.total).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+                        <td>{inv.moneda}</td>
+                        <td className="text-right font-medium">{formatCurrency(inv.total, inv.moneda)}</td>
                         <td>
                           <span className={`erp-badge ${inv.estado === 'Cobrada' ? 'erp-badge-active' : inv.estado === 'Pendiente' ? 'erp-badge-pending' : 'erp-badge-cancelled'}`}>{inv.estado}</span>
                         </td>

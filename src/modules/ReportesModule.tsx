@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCrud } from '@/hooks/useCrud';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { FileText, Download, Calendar, TrendingUp } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 
 const COLORS = ['hsl(212, 55%, 20%)', 'hsl(174, 55%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(210, 15%, 70%)'];
 
@@ -117,7 +118,7 @@ export const ReportesModule = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 88%)" />
                 <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `${(v / 1000000).toFixed(1)}M`} />
-                <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`, 'Ventas']} />
+                <Tooltip formatter={(v: number) => [formatCurrency(v), 'Ventas']} />
                 <Bar dataKey="ventas" fill="hsl(212, 55%, 20%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -132,7 +133,7 @@ export const ReportesModule = () => {
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`, 'Total']} />
+                <Tooltip formatter={(v: number) => [formatCurrency(v), 'Total']} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -144,7 +145,7 @@ export const ReportesModule = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 88%)" />
                 <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `${(v / 1000000).toFixed(1)}M`} />
-                <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`]} />
+                <Tooltip formatter={(v: number) => [formatCurrency(v)]} />
                 <Line type="monotone" dataKey="cobrado" stroke="hsl(145, 60%, 42%)" strokeWidth={2} dot={{ r: 4 }} />
                 <Line type="monotone" dataKey="pendiente" stroke="hsl(0, 72%, 55%)" strokeWidth={2} dot={{ r: 4 }} />
               </LineChart>

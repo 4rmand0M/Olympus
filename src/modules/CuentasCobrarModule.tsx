@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, Filter, DollarSign, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
 import { useCrud } from '@/hooks/useCrud';
+import { formatCurrency } from '@/lib/utils';
 
 export const CuentasCobrarModule = () => {
   const [filtro, setFiltro] = useState('Todos');
@@ -29,10 +30,10 @@ export const CuentasCobrarModule = () => {
   const porVencer = facturas.filter(f => f.estado === 'Pendiente').reduce((acc, f) => acc + Number(f.total), 0);
   
   const metrics = [
-    { label: 'Total por Cobrar', value: `RD$ ${totalPorCobrar.toLocaleString()}`, icon: DollarSign, color: 'text-primary' },
-    { label: 'Vencidas', value: `RD$ ${vencidas.toLocaleString()}`, icon: AlertTriangle, color: 'text-[hsl(var(--erp-danger))]' },
-    { label: 'Por Vencer', value: `RD$ ${porVencer.toLocaleString()}`, icon: Clock, color: 'text-[hsl(var(--erp-warning))]' },
-    { label: 'Cobradas este Mes', value: 'RD$ 0', icon: CheckCircle2, color: 'text-[hsl(var(--erp-success))]' },
+    { label: 'Total por Cobrar', value: formatCurrency(totalPorCobrar), icon: DollarSign, color: 'text-primary' },
+    { label: 'Vencidas', value: formatCurrency(vencidas), icon: AlertTriangle, color: 'text-[hsl(var(--erp-danger))]' },
+    { label: 'Por Vencer', value: formatCurrency(porVencer), icon: Clock, color: 'text-[hsl(var(--erp-warning))]' },
+    { label: 'Cobradas este Mes', value: formatCurrency(0), icon: CheckCircle2, color: 'text-[hsl(var(--erp-success))]' },
   ];
 
   return (
@@ -85,8 +86,8 @@ export const CuentasCobrarModule = () => {
                 <tr key={f.id}>
                   <td className="font-medium">{f.numero_factura}</td>
                   <td>{f.cliente?.nombre || 'Consumidor Final'}</td>
-                  <td className="text-right">RD$ {Number(f.total).toLocaleString()}</td>
-                  <td className="text-right font-medium">RD$ {Number(f.total).toLocaleString()}</td>
+                  <td className="text-right">{formatCurrency(f.total)}</td>
+                  <td className="text-right font-medium">{formatCurrency(f.total)}</td>
                   <td>{f.fecha || f.created_at?.split('T')[0]}</td>
                   <td>
                     <span className={`erp-badge ${

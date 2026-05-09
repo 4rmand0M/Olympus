@@ -7,6 +7,7 @@ import {
   AreaChart, Area, PieChart, Pie, Cell 
 } from 'recharts';
 import { useCrud } from '@/hooks/useCrud';
+import { formatCurrency, formatNumber } from '@/lib/utils';
 
 export const DashboardModule = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -24,10 +25,10 @@ export const DashboardModule = () => {
   const porCobrar = facturasValidas.filter(f => f.estado === 'Pendiente').reduce((acc, f) => acc + Number(f.total), 0);
 
   const metrics = [
-    { label: 'Ventas Totales', value: `RD$ ${totalVentas.toLocaleString()}`, change: '+100%', up: true, icon: DollarSign },
-    { label: 'Facturas Emitidas', value: facturasEmitidas.toString(), change: '+100%', up: true, icon: FileText },
-    { label: 'Clientes Activos', value: clientesActivos.toString(), change: '+100%', up: true, icon: Users },
-    { label: 'Cuentas por Cobrar', value: `RD$ ${porCobrar.toLocaleString()}`, change: '0%', up: true, icon: TrendingUp },
+    { label: 'Ventas Totales', value: formatCurrency(totalVentas), change: '+100%', up: true, icon: DollarSign },
+    { label: 'Facturas Emitidas', value: formatNumber(facturasEmitidas), change: '+100%', up: true, icon: FileText },
+    { label: 'Clientes Activos', value: formatNumber(clientesActivos), change: '+100%', up: true, icon: Users },
+    { label: 'Cuentas por Cobrar', value: formatCurrency(porCobrar), change: '0%', up: true, icon: TrendingUp },
   ];
 
   const recentInvoices = facturas.slice(0, 5).map(f => ({
@@ -35,7 +36,7 @@ export const DashboardModule = () => {
     num: f.numero_factura,
     date: f.fecha || f.created_at?.split('T')[0],
     client: f.cliente?.nombre || 'Consumidor Final',
-    total: `RD$ ${Number(f.total).toLocaleString()}`,
+    total: formatCurrency(f.total),
     status: f.estado || 'Pendiente'
   }));
 
@@ -56,7 +57,7 @@ export const DashboardModule = () => {
         id: pid,
         name: p?.nombre || 'Producto Desconocido',
         qty: quantity,
-        revenue: `RD$ ${(quantity * price).toLocaleString()}`
+        revenue: formatCurrency(quantity * price)
       };
     })
     .sort((a, b) => b.qty - a.qty)
@@ -160,7 +161,7 @@ export const DashboardModule = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 88%)" />
               <XAxis dataKey="dia" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
-              <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`, 'Ventas']} />
+              <Tooltip formatter={(v: number) => [formatCurrency(v), 'Ventas']} />
               <Bar dataKey="ventas" fill="hsl(212, 55%, 20%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -175,7 +176,7 @@ export const DashboardModule = () => {
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`, 'Total']} />
+              <Tooltip formatter={(v: number) => [formatCurrency(v), 'Total']} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -190,7 +191,7 @@ export const DashboardModule = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 88%)" />
               <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `${(v / 1000000).toFixed(1)}M`} />
-              <Tooltip formatter={(v: number) => [`RD$ ${v.toLocaleString()}`, 'Ventas']} />
+              <Tooltip formatter={(v: number) => [formatCurrency(v), 'Ventas']} />
               <Area type="monotone" dataKey="ventas" stroke="hsl(174, 55%, 45%)" fill="hsl(174, 55%, 45%)" fillOpacity={0.15} strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Search, PenBox } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
+import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export const ClientesModule = () => {
@@ -59,29 +60,31 @@ export const ClientesModule = () => {
     setShowEdit(true);
   };
 
-  const FormFields = () => (
-    <div className="space-y-3 py-2">
-      <div className="grid grid-cols-2 gap-3">
-        <div><label className="text-xs text-muted-foreground bg-bac">Nombre / Razón Social *</label><input className="erp-input w-full mt-1" placeholder="Ej: Empresa SRL" value={newClient.nombre} onChange={e => setNewClient({...newClient, nombre: e.target.value})} /></div>
-        <div><label className="text-xs text-muted-foreground">RNC / Cédula</label><input className="erp-input w-full mt-1" placeholder="000000000000" value={newClient.rnc} onChange={e => setNewClient({...newClient, rnc: e.target.value})} /></div>
-        <div><label className="text-xs text-muted-foreground">Teléfono</label><input className="erp-input w-full mt-1" placeholder="809-000-0000" value={newClient.telefono} onChange={e => setNewClient({...newClient, telefono: e.target.value})} /></div>
-        <div><label className="text-xs text-muted-foreground">Email</label><input className="erp-input w-full mt-1" type="email" placeholder="email@ejemplo.com" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} /></div>
-        <div><label className="text-xs text-muted-foreground">Ciudad</label><input className="erp-input w-full mt-1" placeholder="Santo Domingo" value={newClient.ciudad} onChange={e => setNewClient({...newClient, ciudad: e.target.value})} /></div>
-        <div><label className="text-xs text-muted-foreground">Dirección</label><input className="erp-input w-full mt-1" placeholder="Calle, Sector" value={newClient.direccion} onChange={e => setNewClient({...newClient, direccion: e.target.value})} /></div>
-        {editingId && (
-          <>
-            <div><label className="text-xs text-muted-foreground">Estado</label>
-              <select className="erp-input w-full mt-1" value={newClient.estado} onChange={e => setNewClient({...newClient, estado: e.target.value})}>
-                <option value="Activo">Activo</option>
-                <option value="Cancelado">Cancelado</option>
-              </select>
-            </div>
-            <div><label className="text-xs text-muted-foreground">Balance</label><input className="erp-input w-full mt-1" type="number" placeholder="0.00" value={newClient.balance} onChange={e => setNewClient({...newClient, balance: Number(e.target.value)})} /></div>
-          </>
-        )}
-      </div>
+const FormFields = ({ newClient, setNewClient, editingId }: any) => (
+  <div className="space-y-3 py-2">
+    <div className="grid grid-cols-2 gap-3">
+      <div><label className="text-xs text-muted-foreground bg-bac">Nombre / Razón Social *</label><input className="erp-input w-full mt-1" placeholder="Ej: Empresa SRL" value={newClient.nombre} onChange={e => setNewClient({...newClient, nombre: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">RNC / Cédula</label><input className="erp-input w-full mt-1" placeholder="000000000000" value={newClient.rnc} onChange={e => setNewClient({...newClient, rnc: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Teléfono</label><input className="erp-input w-full mt-1" placeholder="809-000-0000" value={newClient.telefono} onChange={e => setNewClient({...newClient, telefono: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Email</label><input className="erp-input w-full mt-1" type="email" placeholder="email@ejemplo.com" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Ciudad</label><input className="erp-input w-full mt-1" placeholder="Santo Domingo" value={newClient.ciudad} onChange={e => setNewClient({...newClient, ciudad: e.target.value})} /></div>
+      <div><label className="text-xs text-muted-foreground">Dirección</label><input className="erp-input w-full mt-1" placeholder="Calle, Sector" value={newClient.direccion} onChange={e => setNewClient({...newClient, direccion: e.target.value})} /></div>
+      {editingId && (
+        <>
+          <div><label className="text-xs text-muted-foreground">Estado</label>
+            <select className="erp-input w-full mt-1" value={newClient.estado} onChange={e => setNewClient({...newClient, estado: e.target.value})}>
+              <option value="Activo">Activo</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div><label className="text-xs text-muted-foreground">Balance</label><input className="erp-input w-full mt-1" type="number" placeholder="0.00" value={newClient.balance} onChange={e => setNewClient({...newClient, balance: Number(e.target.value)})} /></div>
+        </>
+      )}
     </div>
-  );
+  </div>
+);
+
+export const ClientesModule = () => {
 
   return (
     <div className="space-y-3">
@@ -93,7 +96,7 @@ export const ClientesModule = () => {
       <Dialog open={showNew || showEdit} onOpenChange={(open) => { if (!open) { setShowNew(false); setShowEdit(false); } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{showEdit ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle></DialogHeader>
-          <FormFields />
+          <FormFields newClient={newClient} setNewClient={setNewClient} editingId={editingId} />
           <DialogFooter>
             <button className="erp-btn erp-btn-secondary" onClick={() => { setShowNew(false); setShowEdit(false); }}>Cancelar</button>
             <button className="erp-btn erp-btn-primary" onClick={handleSave}>Guardar</button>
@@ -124,7 +127,7 @@ export const ClientesModule = () => {
                     <td className="text-muted-foreground">{c.rnc}</td>
                     <td className="text-muted-foreground">{c.telefono}</td>
                     <td>{c.ciudad}</td>
-                    <td className="text-right font-medium">RD$ {Number(c.balance || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+                    <td className="text-right font-medium">{formatCurrency(c.balance || 0)}</td>
                     <td><span className={`erp-badge ${c.estado === 'Activo' ? 'erp-badge-active' : 'erp-badge-cancelled'}`}>{c.estado}</span></td>
                     <td className="text-center">
                        <button onClick={() => openEdit(c)} className="p-1.5 text-muted-foreground hover:bg-muted rounded" title="Editar">
