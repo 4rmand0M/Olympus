@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe Técnico de Mantenimiento ERP</title>
+</head>
+<body>
+    <h1>INFORME TÉCNICO MAESTRO: INGENIERÍA DE SOFTWARE Y ESTABILIZACIÓN ERP v6.0</h1>
+    <p><strong>Proyecto:</strong> Estabilización Integral y Refactorización del Sistema ERP</p>
+    <p><strong>Alcance:</strong> Resolución de Deuda Técnica, Seguridad, Rendimiento y Lógica de Negocio</p>
+    <p><strong>Estado:</strong> Producción Estable</p>
+
+    <h2>1. RESUMEN EJECUTIVO</h2>
+    <p>El presente informe recopila la totalidad de las intervenciones estructurales y de mantenimiento realizadas sobre la base de código del proyecto desde su inicio. Durante las auditorías profundas del sistema, se identificaron y solucionaron decenas de fallas críticas que comprometían la compilación, el rendimiento, la seguridad de los datos y la experiencia del usuario. El sistema ha sido refactorizado extensamente para garantizar estabilidad a nivel empresarial.</p>
+
+    <h2>2. REPOSITORIO Y COMPILACIÓN INICIAL (DEUDA TÉCNICA)</h2>
+    <ul>
+        <li><strong>Conflictos de Exportación Duplicada:</strong> Existían declaraciones múltiples de <code>export const</code> y <code>export default</code> en módulos clave como <code>ClientesModule.tsx</code> y <code>ProductosModule.tsx</code>. Se fusionó la lógica y la interfaz en exportaciones únicas.</li>
+        <li><strong>Sintaxis JSX Malformada:</strong> Se encontraron etiquetas sin cerrar y estructuras fragmentadas en <code>ReportesModule.tsx</code> y <code>DashboardModule.tsx</code>.</li>
+        <li><strong>Dependencias Faltantes:</strong> Solución de errores relacionados con iconos importados de <code>lucide-react</code> que no correspondían a la versión instalada.</li>
+        <li><strong>Exportaciones y Compilación Rota:</strong> Múltiples sentencias export default causaban fallos fatales en el bundler Vite impidiendo el despliegue.</li>
+    </ul>
+
+    <h2>3. FALLAS DE SEGURIDAD Y AUTENTICACIÓN (LOGIN)</h2>
+    <ul>
+        <li><strong>Errores de Confirmación de Correo (Silent Login Failures):</strong> Al intentar iniciar sesión, los usuarios que no habían confirmado su correo electrónico a través de Supabase Auth generaban una excepción silenciosa. Esto dejaba el botón de login bloqueado en un estado de carga infinita sin feedback visual. <em>Solución:</em> Implementación de mapeo de errores específicos (ej. interceptar <code>Email not confirmed</code>) para redirigir al usuario o sugerir el reenvío del correo de confirmación.</li>
+        <li><strong>Errores de Conexión con la Tabla de Usuarios (Fallo de Sincronización Auth-Pública):</strong> Se detectó un problema crítico post-login. Supabase validaba las credenciales correctamente, pero las políticas de seguridad (RLS) bloqueaban el cruce de datos con la tabla <code>public.usuarios</code>. El usuario iniciaba sesión con éxito, pero la pantalla se quedaba en blanco porque el sistema recibía un Error 403 (Forbidden) al intentar leer su rol o sucursal. <em>Solución:</em> Refactorización de las <code>Row Level Security Policies</code> para permitir a los usuarios autenticados leer exclusivamente su propio perfil usando <code>auth.uid() = id</code>.</li>
+        <li><strong>Desincronización de Expiración de Tokens JWT:</strong> Cuando la sesión caducaba, la UI no se refrescaba, permitiendo al usuario llenar formularios que fallaban al guardar (401 Unauthorized). <em>Solución:</em> Interceptor de red que detecta errores 401 y redirige al login.</li>
+        <li><strong>Políticas RLS Inseguras:</strong> Usuarios podían consultar facturas de sucursales a las que no pertenecían alterando el ID en las peticiones de red. <em>Solución:</em> Se aplicaron políticas estrictas en Supabase asociando la consulta al sucursal_id correspondiente.</li>
+        <li><strong>Exposición de Claves Sensibles:</strong> Variables de entorno sin el prefijo <code>VITE_</code> causaron problemas de empaquetado. <em>Solución:</em> Revisión estricta del <code>.env</code>.</li>
+    </ul>
+
+    <h2>4. ERRORES DE LECTURA E INTEGRIDAD DE DATOS (BASE DE DATOS)</h2>
+    <ul>
+        <li><strong>Errores Severos al Leer Datos (Payload Too Large & Timeouts):</strong> El sistema intentaba descargar toda la tabla de movimientos e historial de facturas de un solo golpe al montar los componentes. A medida que la base de datos crecía, esto causaba cuellos de botella masivos, provocando Timeouts y errores de Payload en el navegador. <em>Solución:</em> Se migró todo el sistema de lectura a una arquitectura de <strong>Paginación Basada en Cursores (Cursor-based Pagination)</strong>, leyendo los datos en bloques seguros de 50 registros.</li>
+        <li><strong>Columnas Inexistentes en Consultas (PGRST204):</strong> El sistema fallaba al intentar renderizar vistas porque los hooks <code>useCrud</code> consultaban campos que no existían en las tablas: <code>moneda</code>, <code>ciudad</code>, <code>unidad</code>, <code>tipo_doc</code>, <code>precio_venta</code>, <code>itbis_aplicado</code> y <code>observaciones</code>.</li>
+        <li><strong>Mapeo Explícito:</strong> Se refactorizaron todos los llamadas a <code>useCrud</code> para solicitar explícitamente los campos disponibles (ej. cambiar <code>precio_venta</code> a <code>precio</code>, y <code>itbis</code> a <code>impuesto</code>).</li>
+        <li><strong>Saneamiento de Datos Basura:</strong> Se identificaron formatters locales que inyectaban caracteres extraños (ej. símbolos <code>¿</code>) y monedas duplicadas en el renderizado de la UI. Se centralizó el formateo a través de <code>Intl.NumberFormat</code>.</li>
+        <li><strong>Prevención de Bloqueos (Deadlocks) de Inventario:</strong> Los módulos intentaban renderizar nombres de productos haciendo búsquedas (<code>find</code>) sobre datos no cargados, lo que lanzaba excepciones. Se mitigó con <em>Optional Chaining</em> (<code>?.</code>).</li>
+        <li><strong>Violaciones de Llaves Foráneas (Orphaned Data):</strong> Borrar un cliente con facturas asociadas causaba un error 500 debido a restricciones SQL. <em>Solución:</em> Alteración de tablas para incluir <code>ON DELETE RESTRICT</code>.</li>
+        <li><strong>Integridad de Creación de Usuarios:</strong> Fallos en el trigger de la base de datos <code>handle_new_user</code> causaban que los metadatos de los nuevos registros no se sincronizaran con la tabla <code>public.usuarios</code> debido a valores nulos. Se robusteció con <code>COALESCE</code>.</li>
+    </ul>
+
+    <h2>5. ERRORES DE INTERFAZ Y MANEJO NUMÉRICO (UI/UX)</h2>
+    <ul>
+        <li><strong>Desbordamiento de Datos Numéricos (Input Overflow):</strong> Un error crítico de UI/UX y lógica de datos. Al intentar insertar cantidades muy grandes (facturas por millones), el número literal <strong>se desbordaba físicamente fuera del contenedor del input</strong>. Además, al usar <code>&lt;input type="number"&gt;</code>, valores inmensos provocaban truncamiento de precisión por los límites del <code>MAX_SAFE_INTEGER</code> en JavaScript. <em>Solución:</em> Se eliminaron los inputs numéricos nativos y se implementaron inputs de texto controlados con máscara de moneda que auto-formatean con comas (ej. <code>1,500,000.00</code>). Para el envío al backend, se integró una librería de alta precisión (como <code>Big.js</code>) para evitar corrupción de datos.</li>
+        <li><strong>Pérdida de Foco (Focus Loss) en Formularios:</strong> Los usuarios reportaban que al escribir un solo carácter en los inputs, el formulario perdía el foco. Se detectó que los componentes de formulario (<code>FormFields</code>) estaban declarados dentro del ciclo de renderizado principal, lo que causaba que React los destruyera y recreara en cada tecla. Se extrajeron al nivel superior del archivo.</li>
+        <li><strong>Cálculos Financieros Peligrosos:</strong> El módulo de facturación utilizaba <code>.toFixed(2)</code> directamente sobre valores potencialmente nulos o no definidos (<code>undefined</code>). Se protegió la lógica forzando un fallback a numérico: <code>(valor || 0).toFixed(2)</code>.</li>
+        <li><strong>Condiciones de Carrera (Race Conditions) en Actualizaciones:</strong> Al guardar rápidamente varias facturas, el estado local se sobrescribía con datos antiguos. <em>Solución:</em> Sistema de concurrencia basado en marcas de tiempo.</li>
+        <li><strong>Desincronización de UI Optimista (Optimistic UI Desync):</strong> Las interfaces asumían inserciones exitosas antes de la confirmación del servidor. Se implementó un rollback en bloques catch.</li>
+        <li><strong>Excepciones Silenciadas (Swallowed Exceptions):</strong> Bloques <code>try/catch</code> vacíos ocultaban fallos en la red. Se implementó <code>toast.error</code> y logging centralizado.</li>
+        <li><strong>Colisiones de Z-Index:</strong> Menús desplegables y modales quedaban ocultos detrás del Sidebar. Se estandarizaron las variables de z-index globales.</li>
+        <li><strong>Desbordamiento de Viewport en Móviles:</strong> Tablas largas rompían el diseño en pantallas pequeñas, forzando un scroll horizontal en toda la página.</li>
+        <li><strong>Advertencias de React "Uncontrolled to Controlled":</strong> Pasar <code>undefined</code> a inputs durante la carga de datos inicial disparaba errores en la consola. Inicialización segura de estado con cadenas vacías <code>''</code>.</li>
+        <li><strong>Desajuste de Hidratación (Hydration Mismatch):</strong> Fechas renderizadas causaban desincronización entre el servidor y el cliente debido a zonas horarias diferentes.</li>
+    </ul>
+
+    <h2>6. TIPADO ESTRICTO Y TYPESCRIPT</h2>
+    <ul>
+        <li><strong>Incompatibilidad de ValueType en Recharts:</strong> Un error crítico en <code>chart.tsx</code>: <code>Argument of type 'ValueType' is not assignable to parameter of type 'string | number'</code>. La librería gráfica pasaba arrays en lugar de primitivos en gráficos apilados. Se agregó validación en tiempo de ejecución.</li>
+        <li><strong>"Any-Hacking":</strong> Las definiciones de Supabase y las firmas de funciones abusaban del tipo <code>any</code>, suprimiendo las validaciones del compilador y posponiendo los errores al runtime. Se mejoró la inferencia de tipos en los flujos principales.</li>
+    </ul>
+
+    <h2>7. PROBLEMAS DE RENDIMIENTO (PERFORMANCE)</h2>
+    <ul>
+        <li><strong>Fugas de Memoria en Suscripciones en Tiempo Real:</strong> Canales de Supabase abiertos sin instrucción de <code>unsubscribe</code> llenaban la memoria RAM congelando el navegador al cambiar de módulos. <em>Solución:</em> Funciones de limpieza en los hooks.</li>
+        <li><strong>Problema de Consultas N+1 en el Dashboard:</strong> El sistema realizaba una consulta separada por cada ítem para obtener el nombre del producto, colapsando la base de datos. <em>Solución:</em> Uso intensivo de <code>JOINs</code> en las vistas SQL.</li>
+        <li><strong>Ausencia de Debounce en Búsqueda:</strong> Los inputs disparaban consultas HTTP por cada tecla presionada causando bloqueos (HTTP 429 Too Many Requests). <em>Solución:</em> Retraso de red de 300ms implementado en un custom hook.</li>
+        <li><strong>Bloqueos de Renderizado Síncrono:</strong> Tablas masivas se renderizaban de golpe bloqueando el Main Thread. Se implementó virtualización de listas.</li>
+    </ul>
+
+    <h2>8. MEJORAS DE NAVEGABILIDAD Y OPTIMIZACIONES GLOBALES</h2>
+    <ul>
+        <li><strong>Atajo de Teclado Global:</strong> Implementación del atajo <strong>Ctrl + B</strong> para enfocar directamente la barra de búsqueda en <code>ERPTopBar.tsx</code> mejorando la eficiencia operativa.</li>
+        <li><strong>Gestión Modular Segura:</strong> Reorganización del Sidebar con módulos inhabilitados visualmente para indicar futuras capacidades sin exponer rutas no terminadas al usuario final.</li>
+    </ul>
+
+    <h2>9. CONCLUSIÓN DEL MANTENIMIENTO</h2>
+    <p>El sistema requirió una refactorización extensiva para cerrar brechas críticas de estabilidad, seguridad y rendimiento. Con estas múltiples correcciones aplicadas a nivel de infraestructura, autenticación (login) y presentación (overflow de inputs), el ERP opera ahora dentro de los estándares óptimos para entornos de alta transaccionalidad.</p>
+</body>
+</html>

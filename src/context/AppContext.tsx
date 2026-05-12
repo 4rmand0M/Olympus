@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Module = 'dashboard' | 'facturacion' | 'clientes' | 'productos' | 'inventario' | 'cuentas-cobrar' | 'reportes' | 'configuracion' | 'usuarios';
+type Module = 'dashboard' | 'facturacion' | 'clientes' | 'cuentas-cobrar' | 'reportes' | 'configuracion' | 'usuarios' | 'proveedores';
 
 interface Sucursal {
   id: string;

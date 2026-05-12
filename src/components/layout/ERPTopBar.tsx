@@ -13,6 +13,19 @@ export const ERPTopBar = () => {
   
   const { data: notifications, loading: loadingNotifs } = useCrud('notificaciones');
   const [notifList, setNotifList] = useState<any[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (notifications) {
@@ -45,7 +58,11 @@ export const ERPTopBar = () => {
       {/* Search */}
       <div className="flex-1 max-w-md relative">
         <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input placeholder="Buscar en Olympus (Ctrl + B)" className="erp-input w-full pl-8 py-1 text-xs" />
+        <input 
+          ref={searchInputRef}
+          placeholder="Buscar en CrediFacil (Ctrl + B)" 
+          className="erp-input w-full pl-8 py-1 text-xs" 
+        />
       </div>
 
       <div className="flex-1" />

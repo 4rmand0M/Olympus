@@ -142,7 +142,8 @@ export const FacturacionModule = () => {
       <html>
         <head><title>Factura ${inv.numero_factura}</title></head>
         <body style="font-family: sans-serif; padding: 40px;">
-          <h1>OLYMPUS BILLING</h1>
+          <h1 style="color: #1f4296;">CREDIFACIL</h1>
+          <p style="font-size: 10px; color: #666; margin-top: -10px;">Plataforma de Facturación — Olympus ERP</p>
           <p>Factura: ${inv.numero_factura}</p>
           <p>Fecha: ${inv.fecha}</p>
           <hr/>

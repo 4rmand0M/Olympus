@@ -10,8 +10,7 @@ export const ReportesModule = () => {
   const [tab, setTab] = useState<'graficos' | 'reportes'>('graficos');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const { data: facturas, loading } = useCrud('facturas', 'id, fecha, total, estado, created_at');
-  const { data: movimientos } = useCrud('movimientos_inventario', 'id, producto_id, tipo, cantidad, created_at');
-  const { data: productos } = useCrud('productos', 'id, nombre, precio');
+
 
   // Agregación para gráficos
   const hoy = new Date();
@@ -69,9 +68,7 @@ export const ReportesModule = () => {
   const reportes = [
     { nombre: 'Ventas por Período', descripcion: 'Resumen de ventas por rango de fechas', tipo: 'Ventas' },
     { nombre: 'Cuentas por Cobrar', descripcion: 'Estado de cuentas pendientes y vencidas', tipo: 'Cobranza' },
-    { nombre: 'Inventario Valorizado', descripcion: 'Valor total del inventario por categoría', tipo: 'Inventario' },
     { nombre: 'Top Clientes', descripcion: 'Clientes con mayor volumen de compras', tipo: 'Ventas' },
-    { nombre: 'Movimientos de Inventario', descripcion: 'Entradas y salidas de productos', tipo: 'Inventario' },
     { nombre: 'Facturas Canceladas', descripcion: 'Registro de facturas anuladas', tipo: 'Ventas' },
   ];
 

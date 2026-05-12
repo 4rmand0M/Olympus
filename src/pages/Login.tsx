@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Building2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
@@ -38,9 +37,9 @@ const Login = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(212,55%,20%)] mb-4">
-            <Building2 className="h-8 w-8 text-white" />
+            <img src="/Credifacil.svg" alt="Logo" className="h-10 w-10" />
           </div>
-          <h1 className="font-heading text-2xl font-bold text-foreground">Olympus Bill</h1>
+          <h1 className="font-heading text-2xl font-bold text-foreground">CrediFacil</h1>
           <p className="text-sm text-muted-foreground mt-1">Systems — Plataforma ERP</p>
         </div>
 
@@ -112,7 +111,7 @@ const Login = () => {
         </div>
 
         <p className="text-center text-[10px] text-muted-foreground mt-6">
-          Olympus Bill Systems v1.0.0 — © 2026
+          CrediFacil / Olympus ERP v1.0.0 — © 2026
         </p>
       </div>
     </div>

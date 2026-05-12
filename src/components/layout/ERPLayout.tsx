@@ -5,8 +5,7 @@ import { AppProvider, useApp } from '@/context/AppContext';
 import { DashboardModule } from '@/modules/DashboardModule';
 import { FacturacionModule } from '@/modules/FacturacionModule';
 import { ClientesModule } from '@/modules/ClientesModule';
-import { ProductosModule } from '@/modules/ProductosModule';
-import { InventarioModule } from '@/modules/InventarioModule';
+
 import { CuentasCobrarModule } from '@/modules/CuentasCobrarModule';
 import { ReportesModule } from '@/modules/ReportesModule';
 import { ConfiguracionModule } from '@/modules/ConfiguracionModule';
@@ -19,8 +18,7 @@ const ModuleRouter = () => {
     dashboard: <DashboardModule />,
     facturacion: <FacturacionModule />,
     clientes: <ClientesModule />,
-    productos: <ProductosModule />,
-    inventario: <InventarioModule />,
+
     'cuentas-cobrar': <CuentasCobrarModule />,
     reportes: <ReportesModule />,
     configuracion: <ConfiguracionModule />,

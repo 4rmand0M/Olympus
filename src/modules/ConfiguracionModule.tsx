@@ -176,7 +176,7 @@ export const ConfiguracionModule = () => {
           {active === 'notificaciones' && (
             <div className="space-y-4">
               <h3 className="font-heading font-semibold">Notificaciones</h3>
-              {['Facturas vencidas', 'Stock bajo', 'Nuevos pedidos', 'Pagos recibidos'].map(n => (
+              {['Facturas vencidas', 'Nuevos pedidos', 'Pagos recibidos'].map(n => (
                 <div key={n} className="flex items-center justify-between py-2 border-b border-border">
                   <span className="text-sm">{n}</span>
                   <input type="checkbox" defaultChecked className="rounded border-input" />
